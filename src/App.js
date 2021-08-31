@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import 'semantic-ui-css/semantic.min.css'
-import { makeStyles } from '@material-ui/core';
+import { makeStyles, useMediaQuery } from '@material-ui/core';
 import { Button, Icon, Input } from 'semantic-ui-react';
 
 // components
@@ -72,11 +72,13 @@ const App = () => {
       total: 1
     },
   ]);
-  console.log('LOOK DATA', data);
   const [openDiscount, setOpenDiscount] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
   const [total, setTotal] = useState(0);
 
+  const w880 = useMediaQuery('(min-width:880px)');
+  const w750 = useMediaQuery('(min-width:750px)');
+  const w480 = useMediaQuery('(min-width:480px)');
   const useStyles = makeStyles({
     header: {
       height: 100,
@@ -94,10 +96,10 @@ const App = () => {
     },
     left: {
       flex: 'auto',
-      paddingRight: 30
+      paddingRight: w750 ? 30 : 0
     },
     right: {
-      width: 300,
+      width: w880 ? 300 : 240
     },
     paper: {
       backgroundColor: '#fff',
@@ -120,6 +122,12 @@ const App = () => {
       overflow: 'hidden',
       transition: '0.2s'
     },
+    fixed: {
+      position: 'fixed',
+      bottom: 0,
+      left: 0,
+      right: 0,
+    }
   });
   const classes = useStyles();
 
@@ -140,6 +148,27 @@ const App = () => {
     let arr = data;
     arr[id].total = arr[id].total + 1;
     setData([...arr]);
+  };
+  const handleCount = (e, id) => {
+    if(e.target.value === '' || e.target.value === '0') {
+      let arr = data;
+      arr[id].total = 0;
+      setData([...arr]);
+      // setCount(0);
+    } else if(Number(e.target.value)) {
+      if(e.target.value.length > 1 && e.target.value[0] === '0') {
+        const str = e.target.value.slice(1,e.target.value.length);
+        let arr = data;
+        arr[id].total = Number(str);
+        setData([...arr]);
+        // setCount(Number(str));
+      } else {
+        let arr = data;
+        arr[id].total = Number(e.target.value);
+        setData([...arr]);
+        // setCount(Number(e.target.value));
+      };
+    };
   };
 
   useEffect(() => {
@@ -169,48 +198,72 @@ const App = () => {
                   onClickWishlist={() => handleWishlist(item.id)}
                   onClickMinus={() => handleMinus(item.id)}
                   onClickPlus={() => handlePlus(item.id)}
+                  onChangeCount={(e) => handleCount(e, item.id)}
                 />
               </div>
             ))}
           </div>
         </div>
-        <div className={classes.right}>
-          <div style={{position:'sticky', top:20}}>
-            <div className={classes.paper} style={{marginBottom:30}}>
-              <div className={classes.title}>The total amount of</div>
-              <div style={{display:'flex', marginBottom:10}}>
-                <div style={{width:'60%'}}>Temporary amount</div>
-                <div style={{width:'40%', textAlign:'right'}}>${total?.toFixed(2)}</div>
-              </div>
-              <div style={{display:'flex', marginBottom:10, borderBottom:'1px solid rgba(0,0,0,0.1)', paddingBottom:10}}>
-                <div style={{width:'60%'}}>Shipping</div>
-                <div style={{width:'40%', textAlign:'right'}}>Gratis</div>
-              </div>
-              <div style={{display:'flex', marginBottom:20, fontWeight:700}}>
-                <div style={{width:'60%'}}>The total amount of (including VAT)</div>
-                <div style={{width:'40%', textAlign:'right'}}>${total?.toFixed(2)}</div>
-              </div>
-              <Button primary fluid className={classes.button} onClick={() => alert(`Total payment is $${total?.toFixed(2)}`)}>GO TO CHECKOUT</Button>
-            </div>
-            <div className={classes.paper}>
-              <div style={{display:'flex'}}>
-                <div style={{flex:'auto'}}>Add a discount code (optional)</div>
-                <div style={{width:'fit-content'}} onClick={() => setOpenDiscount(!openDiscount)}>
-                  <Icon name={openDiscount ? 'chevron up' : 'chevron down'} style={{cursor:'pointer'}}/>
+        {/* {w750 && ( */}
+          <div className={w750 ? classes.right : classes.fixed}>
+            <div style={{position:'sticky', top:20}}>
+              {!w750 && (
+                <div className={classes.paper}>
+                  <div style={{display:'flex'}}>
+                    <div style={{flex:'auto'}}>Add a discount code (optional)</div>
+                    <div style={{width:'fit-content'}} onClick={() => setOpenDiscount(!openDiscount)}>
+                      <Icon name={openDiscount ? 'chevron up' : 'chevron down'} style={{cursor:'pointer'}}/>
+                    </div>
+                  </div>
+                  <div className={classes.accordion}>
+                    <Input
+                      value={discountCode}
+                      onChange={e => setDiscountCode(e.target.value)}
+                      placeholder='Discount Code'
+                      fluid
+                      style={{marginTop:5}}
+                    />
+                  </div>
                 </div>
+              )}
+              <div className={classes.paper} style={{marginBottom: w750 ? 30 : 0}}>
+                <div className={classes.title}>The total amount of</div>
+                <div style={{display:'flex', marginBottom:10}}>
+                  <div style={{width:'60%'}}>Temporary amount</div>
+                  <div style={{width:'40%', textAlign:'right'}}>${total?.toFixed(2)}</div>
+                </div>
+                <div style={{display:'flex', marginBottom:10, borderBottom:'1px solid rgba(0,0,0,0.1)', paddingBottom:10}}>
+                  <div style={{width:'60%'}}>Shipping</div>
+                  <div style={{width:'40%', textAlign:'right'}}>Gratis</div>
+                </div>
+                <div style={{display:'flex', marginBottom:20, fontWeight:700}}>
+                  <div style={{width:'60%'}}>The total amount of (including VAT)</div>
+                  <div style={{width:'40%', textAlign:'right'}}>${total?.toFixed(2)}</div>
+                </div>
+                <Button primary fluid className={classes.button} onClick={() => alert(`Total payment is $${total?.toFixed(2)}`)}>GO TO CHECKOUT</Button>
               </div>
-              <div className={classes.accordion}>
-                <Input
-                  value={discountCode}
-                  onChange={e => setDiscountCode(e.target.value)}
-                  placeholder='Discount Code'
-                  fluid
-                  style={{marginTop:5}}
-                />
-              </div>
+              {w750 && (
+                <div className={classes.paper}>
+                  <div style={{display:'flex'}}>
+                    <div style={{flex:'auto'}}>Add a discount code (optional)</div>
+                    <div style={{width:'fit-content'}} onClick={() => setOpenDiscount(!openDiscount)}>
+                      <Icon name={openDiscount ? 'chevron up' : 'chevron down'} style={{cursor:'pointer'}}/>
+                    </div>
+                  </div>
+                  <div className={classes.accordion}>
+                    <Input
+                      value={discountCode}
+                      onChange={e => setDiscountCode(e.target.value)}
+                      placeholder='Discount Code'
+                      fluid
+                      style={{marginTop:5}}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        {/* )} */}
       </div>
     </div>
   );

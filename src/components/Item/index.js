@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles, useMediaQuery } from '@material-ui/core';
 import { Button, Icon, Input } from 'semantic-ui-react';
 
 const Item = ({data, onClickRemove, onClickWishlist, onClickMinus, onClickPlus, onChangeCount}) => {
 
   const [count, setCount] = useState(data ? data.total : 0);
 
+  const w880 = useMediaQuery('(min-width:880px)');
+  const w750 = useMediaQuery('(min-width:750px)');
+  const w480 = useMediaQuery('(min-width:480px)');
   const useStyles = makeStyles({
     box: {
       paddingBottom: 15,
@@ -13,7 +16,7 @@ const Item = ({data, onClickRemove, onClickWishlist, onClickMinus, onClickPlus, 
       display: 'flex',
     },
     boxLeft: {
-      height: 160,
+      height: w480 ? 160 : 180,
       width: 120,
       backgroundColor: '#E4E4E4',
       borderRadius: 6,
@@ -35,7 +38,7 @@ const Item = ({data, onClickRemove, onClickWishlist, onClickMinus, onClickPlus, 
       position: 'relative'
     },
     icon: {
-      cursor: 'pointer'
+      cursor: 'pointer',
     },
     count: {
       position: 'absolute',
@@ -65,7 +68,37 @@ const Item = ({data, onClickRemove, onClickWishlist, onClickMinus, onClickPlus, 
         padding: '0 11px',
         margin: 0
       }
-    }
+    },
+    countNew: {
+      position: 'absolute',
+      right: 0,
+      bottom: 0,
+      left: 30,
+      height: 30,
+      '& .ui.input': {
+        width: 50,
+        height: 30,
+        borderRadius: 0,
+        verticalAlign: 'top',
+        '& input': {
+          borderRadius: 0,
+          lineHeight: '30px',
+          padding: 0,
+          borderRight: 'none',
+          borderLeft: 'none',
+          textAlign: 'center',
+          '&:focus': {
+            borderColor: 'rgba(34,36,38,.15)'
+          }
+        }
+      },
+      '& .ui.basic.button': {
+        height: 30,
+        lineHeight: '30px',
+        padding: '0 11px',
+        margin: 0
+      }
+    },
   });
   const classes = useStyles();
 
@@ -91,26 +124,42 @@ const Item = ({data, onClickRemove, onClickWishlist, onClickMinus, onClickPlus, 
         <div style={{fontSize:16, fontWeight:700, marginBottom:10}}>{data?.name}</div>
         <div style={{marginBottom:10}}><span>{data?.type.toUpperCase()}</span> - <span>{data?.color.toUpperCase()}</span></div>
         <div style={{marginBottom:10}}>COLOR: {data?.color.toUpperCase()}</div>
-        <div style={{marginBottom:20}}>SIZE: {data?.size.toUpperCase()}</div>
+        <div style={{marginBottom:w480 ? 20 : 10}}>SIZE: {data?.size.toUpperCase()}</div>
         <div style={{width:'100%'}}>
           <span className={classes.icon} style={{marginRight:15}} onClick={onClickRemove}>
             <Icon name='trash' color='grey'/>
-            REMOVE ITEM
+            {w480 && 'REMOVE'}{w880 && ' ITEM'}
           </span>
           <span className={classes.icon} onClick={onClickWishlist}>
             <Icon name='like' color={data?.wishlist ? 'red' : 'grey'}/>
-            MOVE TO WISH LIST
+            {w880 && 'MOVE TO '}{w480 && 'WISH LIST'}
           </span>
-          <span style={{float:'right', fontSize:14, fontWeight:700}}>${data?.price}</span>
+          {w480 && <span style={{float:'right', fontSize:14, fontWeight:700}}>${data?.price}</span>}
         </div>
         <div className={classes.count}>
-          <Button basic icon='minus' style={{borderRadius:'6px 0 0 6px'}} onClick={onClickMinus} />
-          <Input
-            value={data ? data.total : 0}
-            onChange={onChangeCount}
-          />
-          <Button basic icon='plus' style={{borderRadius:'0 6px 6px 0'}} onClick={onClickPlus} />
+          {w480 ? (
+            <div>
+              <Button basic icon='minus' style={{borderRadius:'6px 0 0 6px'}} onClick={onClickMinus} />
+              <Input
+                value={data ? data.total : 0}
+                onChange={onChangeCount}
+              />
+              <Button basic icon='plus' style={{borderRadius:'0 6px 6px 0'}} onClick={onClickPlus} />
+            </div>
+          ) : (
+            <div style={{fontSize:14, fontWeight:700}}>${data?.price}</div>
+          )}
         </div>
+        {!w480 && (
+          <div className={classes.countNew}>
+            <Button basic icon='minus' style={{borderRadius:'6px 0 0 6px'}} onClick={onClickMinus} />
+            <Input
+              value={data ? data.total : 0}
+              onChange={onChangeCount}
+            />
+            <Button basic icon='plus' style={{borderRadius:'0 6px 6px 0'}} onClick={onClickPlus} />
+          </div>
+        )}
       </div>
     </div>
   );
